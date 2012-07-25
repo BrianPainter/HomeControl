@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <div class="hero-unit">
+
+        {% load i18n weather %}
+
+            {% get_current_weather in 'spartanburg' %}
+
+    </div>
+
+    <form action="rainbarrel/" method="POST">
+        <input name="rainbarrel" value="1" />
+        <input name="measurement" value="99" />
+        <input type="submit" value="POST!" />
+    </form>
+{% endblock %}
