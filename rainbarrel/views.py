@@ -1,7 +1,9 @@
 # Create your views here.
-from PIL import Image, Draw
+from PIL import Image, ImageDraw
 from django.http import HttpResponse
-
+import urllib2
+import math
+import json
 
 def graphicalview(request):
     img = Image.new("RGB",(300,300), "#FFFFFF")
@@ -13,6 +15,14 @@ def graphicalview(request):
     tankwidth = 25
     watercolor = "blue"
     waterlevel = 15
+
+    # Get the latest value from thingspeak
+    req = urllib2.Request("http://api.thingspeak.com/channels/2803/feed/last.json")
+    opener = urllib2.build_opener()
+    f =opener.open(req)
+    water_level = json.load(f)
+    waterlevel = int(water_level['field1'])
+
 
     multiple = math.floor(imageheight / (tankheight + (.3* tankwidth)))
     topleft = ((imagewidth - tankwidth * multiple)/2,(imageheight - tankheight
@@ -43,7 +53,6 @@ def graphicalview(request):
     draw.polygon(lines, fill=watercolor)
 
     #draw the water level
-    emptylevel = tankheight - waterlevel
     bbox = (bbox[0]+1,bbox[1] - waterlevel * multiple,
             bbox[2]-1,bbox[3]  - waterlevel * multiple)
     draw.ellipse(bbox, fill = watercolor, outline="black")
@@ -51,11 +60,7 @@ def graphicalview(request):
     # put the text in for the water level
     draw.text((topright[0]+10,botright[1] - waterlevel * multiple),str(waterlevel) + " inches",fill="black")
 
-
-    draw.flush()
     response = HttpResponse(mimetype = "image/png")
     img.save(response,"PNG")
-
-
 
     return  response
